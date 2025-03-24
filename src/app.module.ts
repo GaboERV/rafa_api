@@ -7,7 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 
 import { AuthModule } from './jwt/auth.module';
 
-import { MongooseModule } from '@nestjs/mongoose';
+
 import { DashboardModule } from './iot/dashboard/dashboard.module';
 
 
@@ -16,11 +16,6 @@ import { DashboardModule } from './iot/dashboard/dashboard.module';
     AdministradorModule,
     PrismaModule,
     AuthModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
-    MongooseModule.forRoot('mongodb://localhost/iot'),
     DashboardModule,
   ],
 
