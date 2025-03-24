@@ -16,7 +16,6 @@ import { AdministradorService } from './administrador.service';
 import { CreateAdministradorDto } from './dto/create-administrador.dto';
 import { LoginUserDto } from './dto/login-user';
 import { Verify2FACodeDto } from './dto/verify-2fa-code.dto';
-import { AuthenticatedRequest, AuthGuard } from 'src/jwt/auth.guard';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -37,15 +36,15 @@ import { UpdatePaypalDto } from './dto/update-paypal.dto';
 export class AdministradorController {
   constructor(private readonly administradorService: AdministradorService) {}
 
-  @ApiBearerAuth() // 🛡️ Indica que este endpoint requiere un token Bearer
-  @UseGuards(AuthGuard, RolesGuard) // 🔒 Aplica los guardias de autenticación y roles
+
+
   @Roles('administrador') // 🔑 Define que solo los administradores tienen acceso
   @Get('perfil')
   @ApiOperation({ summary: 'Obtener perfil del administrador autenticado' }) // 📝 Describe el propósito del endpoint
   @ApiResponse({ status: 200, description: 'Perfil del administrador', type: Object }) // ✅ Describe una respuesta exitosa
   @ApiUnauthorizedResponse({ description: 'No autorizado' }) // ❌ Describe una respuesta de no autorizado
   @ApiForbiddenResponse({ description: 'Acceso prohibido' }) // 🚫 Describe una respuesta de acceso prohibido
-  getPerfil(@Request() req: AuthenticatedRequest) {
+  getPerfil(@Request() req: any) {
     return req.user;
   }
 
@@ -59,10 +58,6 @@ export class AdministradorController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: 'Registrar un nuevo administrador' })
-  @ApiBody({ type: CreateAdministradorDto, description: 'Información del nuevo administrador' })
-  @ApiResponse({ status: 201, description: 'Administrador registrado con éxito', type: Object }) // Cambia el tipo si retornas un objeto Administrador
-  @ApiResponse({ status: 400, description: 'Solicitud inválida' })
   async register(@Body() registerUserDto: CreateAdministradorDto) {
     return this.administradorService.registro(registerUserDto);
   }
@@ -88,7 +83,7 @@ export class AdministradorController {
   @ApiResponse({ status: 200, description: 'Información del administrador', type: Object }) // Cambia el tipo a Administrador si usas el modelo de Prisma
   @ApiResponse({ status: 404, description: 'Administrador no encontrado' })
   @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard) // Asegúrate de que los guards estén aquí
+
   async getUser(@Param('id') id: number) {
     const user = await this.administradorService.getUser(Number(id));
     if (!user) {
@@ -103,7 +98,6 @@ export class AdministradorController {
   @ApiResponse({ status: 200, description: 'Estado 2FA actualizado', type: Object }) // Ajusta el tipo de respuesta según lo que retorne el servicio
   @ApiResponse({ status: 404, description: 'Administrador no encontrado' })
   @ApiBearerAuth()
-  @UseGuards(AuthGuard, RolesGuard) // 🔒 Solo admins pueden acceder
   @Roles('administrador') // 🔒 Solo admins pueden acceder
   async toggle2FA(@Param('id') id: number) {
     return this.administradorService.toggle2FA(Number(id));

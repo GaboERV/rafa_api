@@ -9,12 +9,16 @@ import { AuthModule } from './jwt/auth.module';
 
 import { MongooseModule } from '@nestjs/mongoose';
 import { DashboardModule } from './iot/dashboard/dashboard.module';
+import { DashboardService } from './iot/dashboard/dashboard.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 @Module({
   imports: [
     AdministradorModule,
     PrismaModule,
+    ScheduleModule.forRoot(),
+  
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -23,6 +27,6 @@ import { DashboardModule } from './iot/dashboard/dashboard.module';
     DashboardModule,
   ],
 
-  providers: [AppService],
+  providers: [AppService,DashboardService],
 })
 export class AppModule {}

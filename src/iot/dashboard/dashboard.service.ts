@@ -42,7 +42,7 @@ export class DashboardService {
 
     async fetchDataFromApi(): Promise<ApiResponse> {
         try {
-            const apiUrl = 'http://moriahmkt.com/iotapp/'; // Reemplaza con la URL real de tu API
+            const apiUrl = 'https://moriahmkt.com/iotapp/test/'; // Reemplaza con la URL real de tu API
             const response: AxiosResponse<ApiResponse> = await axios.get(apiUrl);
 
             if (response.status !== 200) {

@@ -8,73 +8,247 @@ datasource db {
 }
 
 model Administrador {
-  id               Int               @id @default(autoincrement())
-  nombre           String
-  email            String            @unique
-  contrasena       String
-  telefono         String
-  Enable2FA        Boolean           @default(true)
-  twoFACode        String?
-  paypalEmail      String?
-
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  email       String   @unique
+  contrasena  String
+  telefono    String
+  Enable2FA   Boolean  @default(true)
+  twoFACode   String?
+  paypalEmail String?
+  Hostal      Hostal[]
 }
 
 model SensorHistorico {
-    id            Int       @id @default(autoincrement())
-    humedad       Float
-    temperatura   Float
-    lluvia        Float
-    sol           Int
-    fechaRegistro DateTime  @default(now())
-    dia           String?
-    hora          String?
+  id            Int      @id @default(autoincrement())
+  humedad       Float
+  temperatura   Float
+  lluvia        Float
+  sol           Int
+  fechaRegistro DateTime @default(now())
+  dia           String?
+  hora          String?
 }
 
 model DeletedParcela {
-    id            Int       @id
-    nombre        String
-    ubicacion     String
-    responsable   String
-    tipo_cultivo  String
-    ultimo_riego  String
-    humedad       Float
-    temperatura   Float
-    lluvia        Float
-    sol           Int
-    latitud       Float
-    longitud      Float
-    fechaEliminacion DateTime @default(now())
+  id               Int      @id
+  nombre           String
+  ubicacion        String
+  responsable      String
+  tipo_cultivo     String
+  ultimo_riego     String
+  humedad          Float
+  temperatura      Float
+  lluvia           Float
+  sol              Int
+  latitud          Float
+  longitud         Float
+  fechaEliminacion DateTime @default(now())
 }
 
 model ParcelaHistorico {
-  id            Int       @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   parcelaId     Int
   humedad       Float
   temperatura   Float
   lluvia        Float
   sol           Int
-  fechaRegistro DateTime  @default(now())
-  dia           String?   // Permite valores nulos
-  hora          String?   // Permite valores nulos
+  fechaRegistro DateTime @default(now())
+  dia           String?
+  hora          String?
 }
-
 
 model Parcela {
-    id          Int       @id
-    nombre        String
-    ubicacion     String
-    responsable   String
-    tipo_cultivo  String
-    ultimo_riego  String
-    humedad       Float
-    temperatura   Float
-    lluvia        Float
-    sol           Int
-    latitud       Float
-    longitud      Float
+  id           Int    @id
+  nombre       String
+  ubicacion    String
+  responsable  String
+  tipo_cultivo String
+  ultimo_riego String
+  humedad      Float
+  temperatura  Float
+  lluvia       Float
+  sol          Int
+  latitud      Float
+  longitud     Float
 }
 
+model Cliente {
+  id         Int       @id @default(autoincrement())
+  nombre     String
+  email      String    @unique
+  telefono   String
+  Enable2FA  Boolean   @default(true)
+  contrasena String
+  twoFACode  String?
+  Reserva    Reserva[]
+  Review     Review[]
+}
 
+model Estado {
+  id        Int         @id @default(autoincrement())
+  nombre    String
+  paisId    Int
+  Pais      Pais        @relation(fields: [paisId], references: [id])
+  Municipio Municipio[]
 
+  @@index([paisId], map: "Estado_paisId_fkey")
+}
 
+model Habitacion {
+  id                 Int               @id @default(autoincrement())
+  estado             Habitacion_estado
+  tipo_habitacion_id Int
+  idenficador        String
+  Tipo_Habitacion    Tipo_Habitacion   @relation(fields: [tipo_habitacion_id], references: [id])
+  Reserva            Reserva[]
 
+  @@index([tipo_habitacion_id], map: "Habitacion_tipo_habitacion_id_fkey")
+}
+
+model Hostal {
+  id               Int               @id @default(autoincrement())
+  nombre           String
+  direccion        String
+  telefono         String
+  email            String
+  latitud          Float
+  longitud         Float
+  Municipio_id     Int
+  administrador_id Int
+  descripcion      String            @db.Text
+  Municipio        Municipio         @relation(fields: [Municipio_id], references: [id])
+  Administrador    Administrador     @relation(fields: [administrador_id], references: [id])
+  ImagenHostal     ImagenHostal[]
+  Review           Review[]
+  Tipo_Habitacion  Tipo_Habitacion[]
+
+  @@index([Municipio_id], map: "Hostal_Municipio_id_fkey")
+  @@index([administrador_id], map: "Hostal_administrador_id_fkey")
+}
+
+model ImagenHabitacion {
+  id                 Int             @id @default(autoincrement())
+  url                String
+  public_id          String?
+  tipo_habitacion_id Int
+  Tipo_Habitacion    Tipo_Habitacion @relation(fields: [tipo_habitacion_id], references: [id])
+
+  @@index([tipo_habitacion_id], map: "ImagenHabitacion_tipo_habitacion_id_fkey")
+}
+
+model ImagenHostal {
+  id        Int     @id @default(autoincrement())
+  url       String
+  public_id String?
+  hostal_id Int
+  Hostal    Hostal  @relation(fields: [hostal_id], references: [id])
+
+  @@index([hostal_id], map: "ImagenHostal_hostal_id_fkey")
+}
+
+model ImagenReview {
+  id        Int     @id @default(autoincrement())
+  url       String
+  public_id String?
+  review_id Int
+  Review    Review  @relation(fields: [review_id], references: [id])
+
+  @@index([review_id], map: "ImagenReview_review_id_fkey")
+}
+
+model Municipio {
+  id       Int      @id @default(autoincrement())
+  nombre   String
+  estadoId Int
+  Hostal   Hostal[]
+  Estado   Estado   @relation(fields: [estadoId], references: [id])
+
+  @@index([estadoId], map: "Municipio_estadoId_fkey")
+}
+
+model Pais {
+  id     Int      @id @default(autoincrement())
+  nombre String
+  Estado Estado[]
+}
+
+model PaypalInfo {
+  id            Int      @id @default(autoincrement())
+  orderId       String
+  transactionId String?
+  captureId     String?
+  amount        Float
+  currency      String
+  reservaId     Int      @unique
+  Reserva       Reserva  @relation(fields: [reservaId], references: [id])
+  Refund        Refund[]
+
+  @@index([reservaId])
+}
+
+model Refund {
+  id           Int        @id @default(autoincrement())
+  paypalInfoId Int
+  refundId     String
+  amount       Float
+  currency     String
+  createdAt    DateTime   @default(now())
+  PaypalInfo   PaypalInfo @relation(fields: [paypalInfoId], references: [id])
+
+  @@index([paypalInfoId])
+}
+
+model Reserva {
+  id            Int             @id @default(autoincrement())
+  fecha_entrada DateTime
+  fecha_salida  DateTime
+  estatus       Reserva_estatus
+  precio        Float
+  habitacion_id Int
+  cliente_id    Int
+  PaypalInfo    PaypalInfo?
+  Cliente       Cliente         @relation(fields: [cliente_id], references: [id])
+  Habitacion    Habitacion      @relation(fields: [habitacion_id], references: [id])
+
+  @@index([cliente_id], map: "Reserva_cliente_id_fkey")
+  @@index([habitacion_id], map: "Reserva_habitacion_id_fkey")
+}
+
+model Review {
+  id           Int            @id @default(autoincrement())
+  mensaje      String
+  cliente_id   Int
+  hostal_id    Int
+  ImagenReview ImagenReview[]
+  Cliente      Cliente        @relation(fields: [cliente_id], references: [id])
+  Hostal       Hostal         @relation(fields: [hostal_id], references: [id])
+
+  @@index([cliente_id], map: "Review_cliente_id_fkey")
+  @@index([hostal_id], map: "Review_hostal_id_fkey")
+}
+
+model Tipo_Habitacion {
+  id               Int                @id @default(autoincrement())
+  nombre           String
+  capacidad        Int
+  precio           Float
+  descripcion      String
+  hostal_id        Int
+  Habitacion       Habitacion[]
+  ImagenHabitacion ImagenHabitacion[]
+  Hostal           Hostal             @relation(fields: [hostal_id], references: [id])
+
+  @@index([hostal_id], map: "Tipo_Habitacion_hostal_id_fkey")
+}
+
+enum Habitacion_estado {
+  DISPONIBLE
+  OCUPADA
+}
+
+enum Reserva_estatus {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+}

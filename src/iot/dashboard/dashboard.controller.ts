@@ -30,6 +30,17 @@ export class DashboardController {
     }
   }
 @Get('deleteparcela')
-async deleteParcela(): Promise<void> {
-  await this.dashboardService.getDeletedParcelas()
-}}
+async deleteParcela(): Promise<any> {
+  try {
+    const response = await this.dashboardService.getDeletedParcelas();
+    if (!response) {
+      this.logger.warn('No parcelas found to delete.');
+      return { message: 'No parcelas found to delete.' };
+    }
+    return response;
+  } catch (error) {
+    this.logger.error('Error while deleting parcelas:', error);
+    throw error; // Re-throw the error for NestJS to handle
+  }
+}
+}
