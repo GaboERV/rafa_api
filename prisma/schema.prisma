@@ -1,0 +1,290 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Administrador {
+  id               Int               @id @default(autoincrement())
+  nombre           String
+  email            String            @unique
+  contrasena       String
+  telefono         String
+  Enable2FA        Boolean           @default(true)
+  twoFACode        String?
+  paypalEmail      String?
+  Hostal           Hostal[]
+
+}
+
+model SensorHistorico {
+    id            Int       @id @default(autoincrement())
+    humedad       Float
+    temperatura   Float
+    lluvia        Float
+    sol           Int
+    fechaRegistro DateTime  @default(now())
+    dia           String?
+    hora          String?
+}
+
+model DeletedParcela {
+    id            Int       @id
+    nombre        String
+    ubicacion     String
+    responsable   String
+    tipo_cultivo  String
+    ultimo_riego  String
+    humedad       Float
+    temperatura   Float
+    lluvia        Float
+    sol           Int
+    latitud       Float
+    longitud      Float
+    fechaEliminacion DateTime @default(now())
+}
+
+model ParcelaHistorico {
+  id            Int       @id @default(autoincrement())
+  parcelaId     Int
+  humedad       Float
+  temperatura   Float
+  lluvia        Float
+  sol           Int
+  fechaRegistro DateTime  @default(now())
+  dia           String?   // Permite valores nulos
+  hora          String?   // Permite valores nulos
+}
+
+
+model Parcela {
+    id          Int       @id
+    nombre        String
+    ubicacion     String
+    responsable   String
+    tipo_cultivo  String
+    ultimo_riego  String
+    humedad       Float
+    temperatura   Float
+    lluvia        Float
+    sol           Int
+    latitud       Float
+    longitud      Float
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+model Pais {
+  id      Int      @id @default(autoincrement())
+  nombre  String
+  estados Estado[]
+}
+
+model Estado {
+  id         Int         @id @default(autoincrement())
+  nombre     String
+  paisId     Int
+  pais       Pais        @relation(fields: [paisId], references: [id])
+  municipios Municipio[]
+
+  @@index([paisId], map: "Estado_paisId_fkey")
+}
+
+model Municipio {
+  id       Int      @id @default(autoincrement())
+  nombre   String
+  estadoId Int
+  Hostal   Hostal[]
+  estado   Estado   @relation(fields: [estadoId], references: [id])
+
+  @@index([estadoId], map: "Municipio_estadoId_fkey")
+}
+
+model Hostal {
+  id               Int               @id @default(autoincrement())
+  nombre           String
+  direccion        String
+  telefono         String
+  email            String
+  latitud          Float
+  longitud         Float
+  Municipio_id     Int
+  administrador_id Int
+  descripcion      String            @db.Text
+  Municipio        Municipio         @relation(fields: [Municipio_id], references: [id])
+  administrador    Administrador     @relation(fields: [administrador_id], references: [id])
+  imagenes         ImagenHostal[]
+  reviews          Review[]
+  tipos_habitacion Tipo_Habitacion[]
+
+  @@index([Municipio_id], map: "Hostal_Municipio_id_fkey")
+  @@index([administrador_id], map: "Hostal_administrador_id_fkey")
+}
+
+model Tipo_Habitacion {
+  id           Int                @id @default(autoincrement())
+  nombre       String
+  capacidad    Int
+  precio       Float
+  descripcion  String
+  hostal_id    Int
+  habitaciones Habitacion[]
+  imagenes     ImagenHabitacion[]
+  hostal       Hostal             @relation(fields: [hostal_id], references: [id])
+
+  @@index([hostal_id], map: "Tipo_Habitacion_hostal_id_fkey")
+}
+
+model Habitacion {
+  id                 Int              @id @default(autoincrement())
+  estado             EstadoHabitacion
+  tipo_habitacion_id Int
+  idenficador        String
+  tipo_habitacion    Tipo_Habitacion  @relation(fields: [tipo_habitacion_id], references: [id])
+  reservas           Reserva[]
+
+  @@index([tipo_habitacion_id], map: "Habitacion_tipo_habitacion_id_fkey")
+}
+
+model Reserva {
+  id            Int           @id @default(autoincrement())
+  fecha_entrada DateTime
+  fecha_salida  DateTime
+  estatus       EstadoReserva
+  precio        Float
+  habitacion_id Int
+  cliente_id    Int
+  paypalInfo    PaypalInfo?
+  cliente       Cliente       @relation(fields: [cliente_id], references: [id])
+  habitacion    Habitacion    @relation(fields: [habitacion_id], references: [id])
+
+  @@index([cliente_id], map: "Reserva_cliente_id_fkey")
+  @@index([habitacion_id], map: "Reserva_habitacion_id_fkey")
+}
+
+model Cliente {
+  id         Int       @id @default(autoincrement())
+  nombre     String
+  email      String    @unique
+  telefono   String
+  Enable2FA  Boolean   @default(true)
+  contrasena String
+  twoFACode  String?
+  reservas   Reserva[]
+  reviews    Review[]
+}
+
+model Review {
+  id         Int            @id @default(autoincrement())
+  mensaje    String
+  cliente_id Int
+  hostal_id  Int
+  imagenes   ImagenReview[]
+  cliente    Cliente        @relation(fields: [cliente_id], references: [id])
+  hostal     Hostal         @relation(fields: [hostal_id], references: [id])
+
+  @@index([cliente_id], map: "Review_cliente_id_fkey")
+  @@index([hostal_id], map: "Review_hostal_id_fkey")
+}
+
+model ImagenHostal {
+  id        Int     @id @default(autoincrement())
+  url       String
+  public_id String?
+  hostal_id Int
+  hostal    Hostal  @relation(fields: [hostal_id], references: [id])
+
+  @@index([hostal_id], map: "ImagenHostal_hostal_id_fkey")
+}
+
+model ImagenHabitacion {
+  id                 Int             @id @default(autoincrement())
+  url                String
+   public_id String?
+  tipo_habitacion_id Int
+  tipo_habitacion    Tipo_Habitacion @relation(fields: [tipo_habitacion_id], references: [id])
+
+  @@index([tipo_habitacion_id], map: "ImagenHabitacion_tipo_habitacion_id_fkey")
+}
+
+model ImagenReview {
+  id        Int    @id @default(autoincrement())
+  url       String
+   public_id String?
+  review_id Int
+  review    Review @relation(fields: [review_id], references: [id])
+
+  @@index([review_id], map: "ImagenReview_review_id_fkey")
+}
+
+model PaypalInfo {
+  id            Int      @id @default(autoincrement())
+  orderId       String
+  transactionId String?
+  captureId     String?
+  amount        Float
+  currency      String
+  reservaId     Int      @unique
+  reserva       Reserva  @relation(fields: [reservaId], references: [id])
+  refunds       Refund[]
+
+  @@index([reservaId])
+}
+
+model Refund {
+  id           Int        @id @default(autoincrement())
+  paypalInfoId Int
+  refundId     String
+  amount       Float
+  currency     String
+  createdAt    DateTime   @default(now())
+  paypalInfo   PaypalInfo @relation(fields: [paypalInfoId], references: [id])
+
+  @@index([paypalInfoId])
+}
+
+enum EstadoHabitacion {
+  DISPONIBLE
+  OCUPADA
+}
+
+enum EstadoReserva {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+}
